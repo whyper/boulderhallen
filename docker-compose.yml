@@ -1,0 +1,32 @@
+version: '3.2'
+services:
+  puppeteer:
+    build:
+      context: "."
+#    restart: always
+    networks:
+      - grafana-net
+    depends_on:
+      - grafana
+      - graphite
+
+  grafana:
+    image: grafana/grafana:7.0.3
+    container_name: grafana
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - grafana-net
+
+  graphite:
+    image: graphiteapp/graphite-statsd
+    container_name: graphite
+    restart: always
+    ports:
+      - 2003:2003
+    networks:
+      - grafana-net
+
+networks:
+  grafana-net:
