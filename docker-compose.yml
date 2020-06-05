@@ -9,6 +9,8 @@ services:
     depends_on:
       - grafana
       - graphite
+    volumes:
+      - /dev/shm:/dev/shm
 
   grafana:
     image: grafana/grafana:7.0.3

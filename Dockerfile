@@ -18,11 +18,34 @@ RUN su - pi -c "npm init -y && npm install puppeteer"
 
 RUN apt-get install -y netcat
 
-COPY test* /home/pi/
+COPY puppeteer/test* /home/pi/
 
-#RUN echo "0,5,10,15,20,25,30,35,40,45,50,55 8-23 * * * su - pi -c \"cd /home/pi && /home/pi/test_capacity.sh\"" > mycron &&  \
-#    crontab mycron && rm mycron
-#RUN update-rc.d cron defaults
+
+# Install Selenium
+RUN apt-get install -y unzip xvfb libxi6 libgconf-2-4 default-jdk
+RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
+RUN echo "deb [arch=amd64]  http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+RUN apt-get -y update
+RUN apt-get -y install google-chrome-stable
+
+RUN wget https://chromedriver.storage.googleapis.com/2.41/chromedriver_linux64.zip
+RUN unzip chromedriver_linux64.zip
+RUN mv chromedriver /usr/bin/chromedriver
+RUN chown root:root /usr/bin/chromedriver
+RUN chmod +x /usr/bin/chromedriver
+
+RUN cd /root && wget https://selenium-release.storage.googleapis.com/3.13/selenium-server-standalone-3.13.0.jar && \
+    wget http://www.java2s.com/Code/JarDownload/testng/testng-6.8.7.jar.zip && \
+    unzip testng-6.8.7.jar.zip
+RUN su - pi -c "npm i --save-dev selenium-webdriver chromedriver"
+COPY selenium/* /root/
+
+
+
+RUN echo "0,5,10,15,20,25,30,35,40,45,50,55 8-23 * * * cd /root && /root/test_capacity.sh" > mycron &&  \
+    crontab mycron && rm mycron
+RUN update-rc.d cron defaults
 
 #CMD /bin/bash -c "ping 127.0.0.1"
-CMD su - pi -c "cd /home/pi && /home/pi/test_capacity.sh"
+#CMD su - pi -c "cd /home/pi && /home/pi/test_capacity.sh"
+CMD chromedriver --url-base=/wd/hub
